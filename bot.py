@@ -1,5 +1,3 @@
-#MTAyODMwNDI2OTY5NjMyMzU4NA.GpD4Zw.Kt7wt8bSj1CkcTfRodXdDpgnXvV7ftRv2C0mQM
-
 import os, discord
 from discord.ext import commands
 from dotenv import load_dotenv
