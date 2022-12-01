@@ -96,17 +96,20 @@ class YTDLSource(discord.PCMVolumeTransformer):
                     cls.embedtext = cls.embedtext[4096:]
                     embed = discord.Embed(title="", description=text, color=Colors.yoba_custom)
                     await ctx.send(embed=embed)
+                cls.embedtext = ""
                 return sources
             else:
                 data = data['entries'][0]
                 source = await cls.create_source_part_II(ctx, data)
                 embed = discord.Embed(title="", description=cls.embedtext[:-2], color=Colors.yoba_custom)
                 await ctx.send(embed=embed)
+                cls.embedtext = ""
                 return source
         elif 'title' in data:
             source = await cls.create_source_part_II(ctx, data)
             embed = discord.Embed(title="", description=cls.embedtext[:-2], color=Colors.yoba_custom)
             await ctx.send(embed=embed)
+            cls.embedtext = ""
             return source
         else:
             await ctx.send("Результатов по такому запросу не найдено!")
@@ -193,6 +196,8 @@ class MusicPlayer:
             
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
             embed = discord.Embed(title="Сейчас играет", description=f"[{source.title}]({source.web_url}) [{source.requester.mention}]", color=Colors.yoba_custom)
+            if self.np is not None:
+                await self.np.delete()
             self.np = await self._channel.send(embed=embed)
             await self.next.wait()
 
@@ -235,12 +240,12 @@ class Music(commands.Cog):
         """A local error handler for all errors arising from commands in this cog."""
         if isinstance(error, commands.NoPrivateMessage):
             try:
-                return await ctx.send('Эта команда не используется в личных сообщениях. :|')
+                return await ctx.send('Эта команда не используется в личных сообщениях.')
             except discord.HTTPException:
                 pass
         elif isinstance(error, InvalidVoiceChannel):
             await ctx.send('Ошибка подключения к голосовому каналу. '
-                           'Убедись, пожалуйста, что ты в том канале, в который я могу зайти! :/')
+                           'Убедись, пожалуйста, что ты в том канале, в который я могу зайти!')
 
         print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
@@ -322,7 +327,7 @@ class Music(commands.Cog):
         vc.pause()
         await ctx.send("Paused ⏸️")
 
-    @commands.command(name='resume', description="Возобновить")
+    @commands.command(name='resume', aliases=['>', 'r'], description="Возобновить")
     async def __resume(self, ctx):
 
         vc = ctx.voice_client
@@ -336,7 +341,7 @@ class Music(commands.Cog):
         vc.resume()
         await ctx.send("Resuming ⏯️")
 
-    @commands.command(name='skip', aliases=['s'], description="Переключить трек")
+    @commands.command(name='skip', aliases=['>>', 's'], description="Переключить трек")
     async def __skip(self, ctx):
 
         vc = ctx.voice_client
@@ -352,12 +357,76 @@ class Music(commands.Cog):
 
         vc.stop()
         await ctx.send(f'**`{ctx.author}`**: Пропустил трек!')
+
+    @commands.command(name='skipto', aliases=['>>>', 'sto', 'jump'], description="Переходит к определенной позиции в очереди")
+    async def __skipto(self, ctx, pos : int=None):
+
+        vc = ctx.voice_client
+        if not vc or not vc.is_connected():
+            embed = Embeds.im_not_in_vc
+            return await ctx.send(embed=embed)
+
+        if pos == None:
+            embed = discord.Embed(title="", description=f"Укажите позицию! Например, `bot skipto 3` или `bot >>> 5`", color=Colors.yoba_custom)
+            return await ctx.send(embed=embed)
+        else:
+            try:
+                player = self.__getPlayer(ctx)
+                for i in range(0, pos-1):
+                    s = player.queue._queue[0]
+                    print(f"deleting [{i}]: {s.title}")
+                    del player.queue._queue[0]
+                    try:
+                        os.remove(s.filename)
+                    except FileNotFoundError:
+                        continue
+            except:
+                embed = discord.Embed(title="", description=f'Нет трека на позиции "{pos}"', color=Colors.yoba_custom)
+                return await ctx.send(embed=embed)
+        vc.stop()
+        await ctx.send(f'**`{ctx.author}`**: Пропустил треки!')
     
-    @commands.command(name='remove', aliases=['rm', 'rem'], description="Удаляет трек из очереди по указанной позиции")
+    # @commands.command(name = 'repeat', aliases=['rp', 'again'], description="")
+    # async def __repeat(self, ctx):
+    #     vc = ctx.voice_client
+    #     if not vc or not vc.is_connected():
+    #         embed = Embeds.im_not_in_vc
+    #         return await ctx.send(embed=embed)
+
+    #     player = self.__getPlayer(ctx)
+    #     track = player.current
+    #     player.queue._queue.insert(0, track)
+
+    #     embed = discord.Embed(title="", description=f"**Повторил** [{track.title}]({track.web_url}) [{track.requester.mention}]", color=Colors.yoba_custom)
+    #     await ctx.send(embed=embed)
+    
+    @commands.command(name = 'move', aliases=['m'], description="")
+    async def __move(self, ctx, pos : int=None):
+        vc = ctx.voice_client
+        if not vc or not vc.is_connected():
+            embed = Embeds.im_not_in_vc
+            return await ctx.send(embed=embed)
+
+        s = None
+        player = self.__getPlayer(ctx)
+        if pos == None:
+            s = player.queue._queue.pop()
+        else:
+            try:
+                s = player.queue._queue[pos-1]
+                del player.queue._queue[pos-1]
+            except:
+                embed = discord.Embed(title="", description=f'Нет трека на позиции "{pos}"', color=Colors.yoba_custom)
+                return await ctx.send(embed=embed)
+        player.queue._queue.insert(0, s)
+        embed = discord.Embed(title="", description=f"**Переместил** [{s.title}]({s.web_url}) в начало очереди [{s.requester.mention}]", color=Colors.yoba_custom)
+        await ctx.send(embed=embed)
+
+    
+    @commands.command(name='remove', aliases=['rm', 'delete', 'del'], description="Удаляет трек из очереди по указанной позиции")
     async def __remove(self, ctx, pos : int=None):
 
         vc = ctx.voice_client
-
         if not vc or not vc.is_connected():
             embed = Embeds.im_not_in_vc
             return await ctx.send(embed=embed)
@@ -373,7 +442,7 @@ class Music(commands.Cog):
                 del player.queue._queue[pos-1]
                 embed = discord.Embed(title="", description=f"**Удалил** [{s.title}]({s.web_url}) [{s.requester.mention}]", color=Colors.yoba_custom)
             except:
-                embed = discord.Embed(title="", description=f'Нет трека на позиции "{pos}" :/', color=Colors.yoba_custom)
+                embed = discord.Embed(title="", description=f'Нет трека на позиции "{pos}"', color=Colors.yoba_custom)
         
         try:
             os.remove(s.filename)
@@ -417,7 +486,6 @@ class Music(commands.Cog):
             return await ctx.send(embed=embed)
         
         upcoming = list(itertools.islice(player.queue._queue, 0, int(len(player.queue._queue))))
-
         qtext = f"NOW: {self.__nowPlaying(vc.source)}\n\n"
         qtext += '\n'.join(f"{upcoming.index(_) + 1}. [{_.title}]({_.web_url}) | `{self.__getDuration(_.duration)}` [{_.requester.mention}]" for _ in upcoming)
         while len(qtext) != 0:

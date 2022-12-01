@@ -1,5 +1,6 @@
 import os, discord
 from discord.ext import commands
+from pretty_help import PrettyHelp
 from dotenv import load_dotenv
 from commands.yt import Music
 from commands.roles import Roles

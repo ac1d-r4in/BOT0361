@@ -1,4 +1,4 @@
-import discord
+import discord, asyncio
 from discord.ext import commands
 
 class ManageMessages(commands.Cog):
@@ -29,4 +29,6 @@ class ManageMessages(commands.Cog):
     async def purge_all(self, ctx, *arg):
         if await self.confirm(ctx, f"удалить 100 последних сообщений из канала?") == True:
             d = await ManageMessages.__purge(ctx, 0)
+            async with ctx.typing():
+                await asyncio.sleep(15)
             await ctx.channel.send(f'Удалено {d} сообщений из текущего канала.')
