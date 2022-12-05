@@ -101,7 +101,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
                 etext = cls.embedtext[:-2]
                 cls.embedtext = ""
                 return (source, etext)
-                
+
         elif 'title' in data:
             source = await cls.create_source_part_II(ctx, data)
             etext = cls.embedtext[:-2]
@@ -210,12 +210,12 @@ class Music(commands.Cog):
 
     __slots__ = ('bot', 'players')
 
-    def __init__(self, bot, confirm, check, get_ym_album):
+    def __init__(self, bot, confirm, check, parse_tracks):
         self.bot = bot
         self.players = {}
         self.confirm = confirm
         self.check = check
-        self.get_ym_album = get_ym_album
+        self.parse_tracks = parse_tracks
 
     async def cleanup(self, guild):
         try:
@@ -293,14 +293,22 @@ class Music(commands.Cog):
             if not vc:
                 await self.__connect(self, ctx)
             
-            if "music.yandex.ru/" in search:
-                tracklist = self.get_ym_album(search)
+            if "music.yandex.ru/" or "vk.com/" in search:
+                tracklist = self.parse_tracks(search)
                 if tracklist is not None:
                     embedtext = ""
                     for track in tracklist:
                         embedtext += await self.__enqueue(ctx, track) + '\n\n'
                 else:
-                    embedtext = "Не удалось получить данные о плейлисте Яндекс Музыки!"
+                    embedtext = (
+                    "Некорректная ссылка! Я поддерживаю следующие запросы:\n\n\n"
+                    " - Поиск на YouTube | `bot p morgenshtern cadillac`\n\n"
+                    " - Youtube-видео | `bot p https://www.youtube.com/watch?v=-7n4t0cbVD4`\n\n"
+                    " - Youtube-плейлист | `bot p https://www.youtube.com/playlist?list=PLIsJ_QsAsiEyvgFvCCpJM3wcmcVv-rK7s`\n\n"
+                    " - Альбом в Яндекс.Музыке | `bot p https://music.yandex.ru/album/5789742`\n\n"
+                    " - Плейлист в Яндекс.Музыке | `bot p https://music.yandex.ru/users/acidra1n/playlists/1002`\n\n"
+                    " - Плейлист ВКонтакте | `bot p https://vk.com/music/playlist/225729518_40_5d3d28d175e51b12e2`\n\n"
+                    )
             else:
                 embedtext = await self.__enqueue(ctx, search)
             while len(embedtext) != 0:

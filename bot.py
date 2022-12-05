@@ -18,7 +18,7 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 bot = commands.Bot(command_prefix="bot ", intents=intents)
 
 async def addCogs():
-    await bot.add_cog(Music(bot, __confirmation, __overflowCheck, Parsers.YMusicParser))
+    await bot.add_cog(Music(bot, __confirmation, __overflowCheck, Parsers.crossroad))
     await bot.add_cog(Roles(bot, __confirmation))
     await bot.add_cog(ManageMessages(bot, __confirmation))
     await bot.add_cog(BanWords(bot, __confirmation))
