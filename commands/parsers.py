@@ -43,5 +43,4 @@ class Parsers:
         if tracklist[0] == None:
             return None
         else:
-            print(tracklist)
             return tracklist

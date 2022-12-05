@@ -17,7 +17,6 @@ async def __overflowCheck(ctx):
                 counter += os.path.getsize(os.path.join(dir_path, file))
     except FileNotFoundError:
         pass
-    print(counter)
     if (counter > 1000000000):
         ctx.bot.loop.create_task(background_task(ctx))
         await ctx.channel.send(f"Внимание! У меня скопилось много кэша и в {str(WHEN)} UTC я приберусь у себя на сервере! "

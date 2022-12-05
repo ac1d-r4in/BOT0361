@@ -41,6 +41,7 @@ class Colors:
 
 class Embeds:
     im_not_in_vc = discord.Embed(title="", description="Я не подсоединен к голосовому каналу!", color=Colors.yoba_custom)
+    invalid_source = discord.Embed(title="", description="Ошибка - некорректный источник!", color=Colors.yoba_custom)
 
 class VoiceConnectionError(commands.CommandError):
     """Custom Exception class for connection errors."""
@@ -91,26 +92,21 @@ class YTDLSource(discord.PCMVolumeTransformer):
                         sources.append(await cls.create_source_part_II(ctx, entry))
                     except:
                         continue
-                while len(cls.embedtext) != 0:
-                    text = cls.embedtext[0:4096]
-                    cls.embedtext = cls.embedtext[4096:]
-                    embed = discord.Embed(title="", description=text, color=Colors.yoba_custom)
-                    await ctx.send(embed=embed)
+                etext = cls.embedtext
                 cls.embedtext = ""
-                return sources
+                return (sources, etext)
             else:
                 data = data['entries'][0]
                 source = await cls.create_source_part_II(ctx, data)
-                embed = discord.Embed(title="", description=cls.embedtext[:-2], color=Colors.yoba_custom)
-                await ctx.send(embed=embed)
+                etext = cls.embedtext[:-2]
                 cls.embedtext = ""
-                return source
+                return (source, etext)
+                
         elif 'title' in data:
             source = await cls.create_source_part_II(ctx, data)
-            embed = discord.Embed(title="", description=cls.embedtext[:-2], color=Colors.yoba_custom)
-            await ctx.send(embed=embed)
+            etext = cls.embedtext[:-2]
             cls.embedtext = ""
-            return source
+            return (source, etext)
         else:
             await ctx.send("Результатов по такому запросу не найдено!")
 
@@ -293,18 +289,25 @@ class Music(commands.Cog):
         await self.check(ctx)
         async with ctx.typing():
             vc = ctx.voice_client
+            embed = None
             if not vc:
                 await self.__connect(self, ctx)
             
             if "music.yandex.ru/" in search:
                 tracklist = self.get_ym_album(search)
                 if tracklist is not None:
+                    embedtext = ""
                     for track in tracklist:
-                        await self.__enqueue(ctx, track)
+                        embedtext += await self.__enqueue(ctx, track) + '\n\n'
                 else:
-                    await ctx.send("Не удалось получить данные о плейлисте Яндекс Музыки!")
+                    embedtext = "Не удалось получить данные о плейлисте Яндекс Музыки!"
             else:
-                await self.__enqueue(ctx, search)
+                embedtext = await self.__enqueue(ctx, search)
+            while len(embedtext) != 0:
+                text = embedtext[0:4096]
+                embedtext = embedtext[4096:]
+                embed = discord.Embed(title="", description=text, color=Colors.yoba_custom)
+                await ctx.send(embed=embed)
         
     async def __enqueue(self, ctx, search):
         player = self.__getPlayer(ctx)
@@ -316,15 +319,16 @@ class Music(commands.Cog):
             playlist = True
         
         source = await YTDLSource.create_source_part_I(ctx, search, playlist = playlist, loop=self.bot.loop, download=True)
-        if isinstance(source, list):
-            for s in source:
+        if isinstance(source[0], list):
+            for s in source[0]:
                 await player.queue.put(s)
-        elif isinstance(source, YTDLSource):
-            await player.queue.put(source)
+        elif isinstance(source[0], YTDLSource):
+            await player.queue.put(source[0])
         else:
-            await ctx.send(f"Source is invalid: {source}")
+            await ctx.send(embed=Embeds.invalid_source)
             return
-        print(YTDLSource.embedtext)
+
+        return source[1]
 
     @commands.command(name='pause', aliases = ['II'], description="Поставить плеер на паузу")
     async def __pause(self, ctx):
