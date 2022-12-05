@@ -214,11 +214,12 @@ class Music(commands.Cog):
 
     __slots__ = ('bot', 'players')
 
-    def __init__(self, bot, confirm, check):
+    def __init__(self, bot, confirm, check, get_ym_album):
         self.bot = bot
         self.players = {}
         self.confirm = confirm
         self.check = check
+        self.get_ym_album = get_ym_album
 
     async def cleanup(self, guild):
         try:
@@ -290,28 +291,40 @@ class Music(commands.Cog):
     async def __play(self, ctx, *, search: str):
 
         await self.check(ctx)
-        
         async with ctx.typing():
             vc = ctx.voice_client
             if not vc:
                 await self.__connect(self, ctx)
-
-            player = self.__getPlayer(ctx)
-            # If download is False, source will be a dict which will be used later to regather the stream.
-            # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
             
-            playlist = False
-            if "youtube.com/playlist" in search:
-                playlist = True
-            
-            source = await YTDLSource.create_source_part_I(ctx, search, playlist = playlist, loop=self.bot.loop, download=True)
-            if isinstance(source, list):
-                for s in source:
-                    await player.queue.put(s)
-            elif isinstance(source, YTDLSource):
-                await player.queue.put(source)
+            if "music.yandex.ru/" in search:
+                tracklist = self.get_ym_album(search)
+                if tracklist is not None:
+                    for track in tracklist:
+                        await self.__enqueue(ctx, track)
+                else:
+                    await ctx.send("Не удалось получить данные о плейлисте Яндекс Музыки!")
             else:
-                await ctx.send(f"Source is invalid: {source}")
+                await self.__enqueue(ctx, search)
+        
+    async def __enqueue(self, ctx, search):
+        player = self.__getPlayer(ctx)
+        # If download is False, source will be a dict which will be used later to regather the stream.
+        # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
+        
+        playlist = False
+        if "youtube.com/playlist" in search:
+            playlist = True
+        
+        source = await YTDLSource.create_source_part_I(ctx, search, playlist = playlist, loop=self.bot.loop, download=True)
+        if isinstance(source, list):
+            for s in source:
+                await player.queue.put(s)
+        elif isinstance(source, YTDLSource):
+            await player.queue.put(source)
+        else:
+            await ctx.send(f"Source is invalid: {source}")
+            return
+        print(YTDLSource.embedtext)
 
     @commands.command(name='pause', aliases = ['II'], description="Поставить плеер на паузу")
     async def __pause(self, ctx):

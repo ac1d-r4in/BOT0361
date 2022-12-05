@@ -1,6 +1,7 @@
 import os, discord
 from discord.ext import commands
 from pretty_help import PrettyHelp
+from commands.parsers import Parsers
 from dotenv import load_dotenv
 from commands.yt import Music
 from commands.roles import Roles
@@ -17,7 +18,7 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 bot = commands.Bot(command_prefix="bot ", intents=intents)
 
 async def addCogs():
-    await bot.add_cog(Music(bot, __confirmation, __overflowCheck))
+    await bot.add_cog(Music(bot, __confirmation, __overflowCheck, Parsers.YMusicParser))
     await bot.add_cog(Roles(bot, __confirmation))
     await bot.add_cog(ManageMessages(bot, __confirmation))
     await bot.add_cog(BanWords(bot, __confirmation))
