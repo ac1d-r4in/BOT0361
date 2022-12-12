@@ -91,7 +91,9 @@ class Bans(commands.Cog):
             except discord.Forbidden:
                 await ctx.channel.send("Я не имею права разбанивать пользователей.")
 
-    @commands.command(name='graylist', help='Выписывает пользователю предупреждение. 1е предупреждение - таймаут 5 мин, 2е предупреждение - таймаут 1 день, 3е - бан.')
+    @commands.command(name='graylist', help=(
+        "Выписывает упомянутому пользователю предупреждение. 1е предупреждение - таймаут 5 мин, 2е предупреждение - таймаут 1 день, 3е - бан. "
+        "Например, `bot graylist @user`"))
     @commands.has_guild_permissions(ban_members = True)
     async def graylist(self, ctx, *args):
         user = ctx.message.mentions[0]
@@ -102,13 +104,13 @@ class Bans(commands.Cog):
         if await self.confirm(ctx, f"выписать предупреждение пользователю {user.mention}?") == True:
             await Bans.__graylist(ctx, user, reason = reason)
 
-    @commands.command(name='ungraylist', help='Снимает с пользователя все предупреждения')
+    @commands.command(name='ungraylist', help='Снимает с упомянутого пользователя все предупреждения. Например, `bot ungraylist @user`')
     @commands.has_guild_permissions(ban_members = True)
     async def ungraylist(self, ctx):
         user = ctx.message.mentions[0]
         await Bans.__ungraylist(ctx, user.name)
 
-    @commands.command(name='ban', help='Забанить пользователя')
+    @commands.command(name='ban', help='Забанить упомянутого пользователя. Например, `bot ban @user`')
     @commands.has_guild_permissions(ban_members = True)
     async def ban(self, ctx, *arg):
         user = ctx.message.mentions[0]

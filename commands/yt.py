@@ -245,7 +245,7 @@ class Music(commands.Cog):
 
         return player
 
-    @commands.command(name='join', aliases=['connect', 'j'], description="Присоединиться в голосовой канал, в котором находится пользователь")
+    @commands.command(name='join', aliases=['connect', 'j'], help="Присоединиться в голосовой канал, в котором находится пользователь")
     async def __connect(self, ctx, *, channel: discord.VoiceChannel=None):
 
         if not channel:
@@ -283,7 +283,7 @@ class Music(commands.Cog):
                 raise VoiceConnectionError(f'Не удалось подключиться к каналу: <{channel}>. :(')
         await ctx.send(f'Успешно **присоединился** в канал `{channel}`. Приветик!')
 
-    @commands.command(name='play', aliases=['p'], description=(
+    @commands.command(name='play', aliases=['p'], help=(
         "Запускает музыку по указанному запросу или ссылке. Примеры:\n\n"
         " - Поиск на YouTube | `bot p morgenshtern cadillac`\n\n"
         " - Youtube-видео | `bot p https://www.youtube.com/watch?v=-7n4t0cbVD4`\n\n"
@@ -346,7 +346,7 @@ class Music(commands.Cog):
 
         return source[1]
 
-    @commands.command(name='pause', aliases = ['II'], description="Поставить плеер на паузу")
+    @commands.command(name='pause', aliases = ['II'], help="Поставить плеер на паузу")
     async def __pause(self, ctx):
         
         vc = ctx.voice_client
@@ -360,7 +360,7 @@ class Music(commands.Cog):
         vc.pause()
         await ctx.send("Paused ⏸️")
 
-    @commands.command(name='resume', aliases=['>', 'r'], description="Возобновить произведение")
+    @commands.command(name='resume', aliases=['>', 'r'], help="Возобновить произведение")
     async def __resume(self, ctx):
 
         vc = ctx.voice_client
@@ -374,7 +374,7 @@ class Music(commands.Cog):
         vc.resume()
         await ctx.send("Resuming ⏯️")
 
-    @commands.command(name='skip', aliases=['>>', 's'], description="Переключить трек")
+    @commands.command(name='skip', aliases=['>>', 's'], help="Переключить трек")
     async def __skip(self, ctx):
 
         vc = ctx.voice_client
@@ -391,7 +391,7 @@ class Music(commands.Cog):
         vc.stop()
         await ctx.send(f'**`{ctx.author}`**: Пропустил трек!')
 
-    @commands.command(name='skipto', aliases=['>>>', 'sto', 'jump'], description="Переходит к определенной позиции в очереди, пропуская остальные. Например, `bot >>> 4`.")
+    @commands.command(name='skipto', aliases=['>>>', 'sto', 'jump'], help="Переходит к определенной позиции в очереди, пропуская остальные. Например, `bot >>> 4`.")
     async def __skipto(self, ctx, pos : int=None):
 
         vc = ctx.voice_client
@@ -433,7 +433,7 @@ class Music(commands.Cog):
     #     embed = discord.Embed(title="", description=f"**Повторил** [{track.title}]({track.web_url}) [{track.requester.mention}]", color=Colors.yoba_custom)
     #     await ctx.send(embed=embed)
     
-    @commands.command(name = 'move', aliases=['m'], description="Переместить трек по указанной позиции в начало очереди. Если позиция не указана, берется последний трек в очреди. Например: `bot m`, `bot m 4`.")
+    @commands.command(name = 'move', aliases=['m'], help="Переместить трек по указанной позиции в начало очереди. Если позиция не указана, берется последний трек в очреди. Например: `bot m`, `bot m 4`.")
     async def __move(self, ctx, pos : int=None):
         vc = ctx.voice_client
         if not vc or not vc.is_connected():
@@ -456,7 +456,7 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     
-    @commands.command(name='remove', aliases=['rm', 'delete', 'del'], description="Удаляет трек из очереди по указанной позиции. Если позиция не указана, берется последний трек в очреди. Например, `bot rm`, `bot rm 4`.")
+    @commands.command(name='remove', aliases=['rm', 'delete', 'del'], help="Удаляет трек из очереди по указанной позиции. Если позиция не указана, берется последний трек в очреди. Например, `bot rm`, `bot rm 4`.")
     async def __remove(self, ctx, pos : int=None):
 
         vc = ctx.voice_client
@@ -484,7 +484,7 @@ class Music(commands.Cog):
         
         await ctx.send(embed=embed)
     
-    @commands.command(name='clear', aliases=['clr'], description="Очищает очередь")
+    @commands.command(name='clear', aliases=['clr'], help="Очищает очередь")
     async def __clear(self, ctx):
 
         vc = ctx.voice_client
@@ -504,7 +504,7 @@ class Music(commands.Cog):
         player.queue._queue.clear()
         await ctx.send('Очередь **очищена**!')
 
-    @commands.command(name='queue', aliases=['q', 'playlist'], description="Показывает очередь")
+    @commands.command(name='queue', aliases=['q', 'playlist'], help="Показывает очередь")
     async def __queueInfo(self, ctx):
 
         vc = ctx.voice_client
@@ -527,7 +527,7 @@ class Music(commands.Cog):
             embed = discord.Embed(title="", description=text, color=Colors.yoba_custom)
             await ctx.send(embed=embed)
 
-    @commands.command(name='nowplaying', aliases=['np', 'current'], description="Показывает играющий сейчас трек")
+    @commands.command(name='nowplaying', aliases=['np', 'current'], help="Показывает играющий сейчас трек")
     async def now_playing(self, ctx):
         
         vc = ctx.voice_client
@@ -562,7 +562,7 @@ class Music(commands.Cog):
         return duration
 
 
-    @commands.command(name='leave', aliases=["stop", "dc", "disconnect", "bye"], description="Выключить плеер и выйти из канала")
+    @commands.command(name='leave', aliases=["stop", "dc", "disconnect", "bye"], help="Выключить плеер и выйти из канала")
     async def __leave(self, ctx):
         
         vc = ctx.voice_client
@@ -583,7 +583,7 @@ class Music(commands.Cog):
 
         await self.cleanup(ctx.guild)
 
-    @commands.command(name='shuffle', aliases=["sh", "><"], description="Перемешивает очередь в случайном порядке")
+    @commands.command(name='shuffle', aliases=["sh", "><"], help="Перемешивает очередь в случайном порядке")
     async def __shuffle(self, ctx):
 
         vc = ctx.voice_client

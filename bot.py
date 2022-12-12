@@ -111,7 +111,7 @@ class MyHelp(commands.HelpCommand):
         "Бот находится в состоянии **альфа-тестирования**, а если бы была буква перед **альфой**, то была бы она.\n"
         "По любым ошибкам в работе бота можно и нужно писать мне: **vaskebjorn#8805**\n"
         "\n\n"
-        "**Музыка** - все команды требуют наличия роли `DJ`, которая выдается тому, кто вызвал плеер.\n"
+        "**Музыка** - Команды для управления музыкальным плеером. Все команды требуют наличия роли `DJ`, которая выдается тому, кто вызвал плеер.\n"
         "`join`, `play`, `pause`, `resume`, `skip`, `skipto`, `nowplaying`, `queue`, `clear`, `shuffle`, `move`, `remove`\n"
         "\n"
         "**Команды** - набор разноцветных ролей, на которые смогут делиться участники сервера. Команды можно переименовать.\n"
@@ -133,11 +133,11 @@ class MyHelp(commands.HelpCommand):
        
    # !help <command>
     async def send_command_help(self, command):
-        aliases = ""
+        aliases = "`bot {}`, ".format(command.name)
         for a in command.aliases:
             aliases += "`bot {}`, ".format(a)
         aliases = aliases[:-2]
-        description = f"`bot {command.name}`, {aliases}\n\n{command.description}"
+        description = f"{aliases}\n\n{command.help}"
         help_command_embed = discord.Embed(title=f"Команда {command.name}", description=description, color=Colors.yoba_custom)
         await self.context.send(embed=help_command_embed)
 
