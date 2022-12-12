@@ -1,5 +1,12 @@
-import asyncio, sys, os, shutil
+import discord, asyncio, sys, os, shutil
 from datetime import datetime, time, timedelta
+
+class Colors:
+    yoba_custom = discord.Color.from_str("0x7badff")
+
+class Embeds:
+    im_not_in_vc = discord.Embed(title="", description="Я не подсоединен к голосовому каналу!", color=Colors.yoba_custom)
+    invalid_source = discord.Embed(title="", description="Ошибка - некорректный источник!", color=Colors.yoba_custom)
 
 channel_id = 1 # Put your channel id here
 WHEN = time(17, 15, 0)  # 6:00 PM

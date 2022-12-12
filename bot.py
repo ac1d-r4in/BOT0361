@@ -8,7 +8,7 @@ from commands.roles import Roles
 from commands.messages import ManageMessages
 from commands.banwords import BanWords
 from commands.bans import Bans
-from commands.functions import __confirmation, __overflowCheck, __wipe, restart_bot
+from commands.functions import __confirmation, __overflowCheck, __wipe, restart_bot, Colors
 
 intents = discord.Intents.all()
 intents.members = True
@@ -100,6 +100,48 @@ async def test(ctx, *args):
 @commands.has_guild_permissions(administrator = True)
 async def reboot(ctx):
     restart_bot()
+
+class MyHelp(commands.HelpCommand):
+
+    help_embed=discord.Embed(title="Команды бота", description=(
+        "Я много чего умею - играть музыку, модерировать каналы, даже банить пользователей!\n"
+        "Узнать более подробную информацию о команде - `bot help команда`\n"
+        "Некоторые команды требуют наличия прав модератора или администратора на сервере.\n"
+        "\n"
+        "Бот находится в состоянии **альфа-тестирования**, а если бы была буква перед **альфой**, то была бы она.\n"
+        "По любым ошибкам в работе бота можно и нужно писать мне: **vaskebjorn#8805**\n"
+        "\n\n"
+        "**Музыка** - все команды требуют наличия роли `DJ`, которая выдается тому, кто вызвал плеер.\n"
+        "`join`, `play`, `pause`, `resume`, `skip`, `skipto`, `nowplaying`, `queue`, `clear`, `shuffle`, `move`, `remove`\n"
+        "\n"
+        "**Команды** - набор разноцветных ролей, на которые смогут делиться участники сервера. Команды можно переименовать.\n"
+        "`[MOD]create_teams`, `jointeam`\n"
+        "\n"
+        "**Предупреждения и баны** - давайте надеяться, что до такого не дойдет!\n"
+        "`[MOD]graylist`, `[MOD]ungraylist`, `[MOD]ban`, `[ADM]mercy`, `[ADM]amnesty`\n"
+        "\n"
+        "**Модерация** - для ограничения свободы слова (или ее возвращения).\n"
+        "`[MOD]banword`, `[MOD]unbanword`, `[ADM]liberty`, `banwords`\n"
+        "\n"
+        "**Очистка сообщений из канала** - только моих, или вообще всех.\n"
+        "`[MOD]purge`, `[MOD]purge_all`"
+    ), color=Colors.yoba_custom)
+
+   # !help
+    async def send_bot_help(self, mapping):
+        await self.context.send(embed=self.help_embed)
+       
+   # !help <command>
+    async def send_command_help(self, command):
+        aliases = ""
+        for a in command.aliases:
+            aliases += "`bot {}`, ".format(a)
+        aliases = aliases[:-2]
+        description = f"`bot {command.name}`, {aliases}\n\n{command.description}"
+        help_command_embed = discord.Embed(title=f"Команда {command.name}", description=description, color=Colors.yoba_custom)
+        await self.context.send(embed=help_command_embed)
+
+bot.help_command = MyHelp()
 
 #YTКОМАНДЫ-----------------------------------------------------------------------------------------------------------------
 

@@ -79,7 +79,7 @@ class Parsers:
                     names.append(entry.text)
             except:
                 return None
-            artists = artists[3:][:-1]
+            artists = artists[4:][:-1]
             if len(names) == len(artists):
                 for i in range(len(names)):
                     tracklist.append(names[i] + ' ' + artists[i])
