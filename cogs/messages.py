@@ -20,14 +20,14 @@ class ManageMessages(commands.Cog):
     @commands.command(name='purge', help='Tells the bot to join the voice channel')
     @commands.has_guild_permissions(manage_messages = True)
     async def purge(self, ctx, *arg):
-        if await self.confirm(ctx, f"удалить 100 последних моих сообщений из канала?") == True:
+        if await self.confirm(ctx, f"удалить 100 последних моих сообщений из канала") == True:
             d = await ManageMessages.__purge(ctx, 1)
             await ctx.channel.send(f'Удалено {d} моих сообщений из текущего канала.')
 
     @commands.command(name='purge_all', help='Tells the bot to join the voice channel')
     @commands.has_guild_permissions(manage_messages = True)
     async def purge_all(self, ctx, *arg):
-        if await self.confirm(ctx, f"удалить 100 последних сообщений из канала?") == True:
+        if await self.confirm(ctx, f"удалить 100 последних сообщений из канала") == True:
             d = await ManageMessages.__purge(ctx, 0)
             async with ctx.typing():
                 await asyncio.sleep(15)

@@ -6,10 +6,13 @@ class Roles(commands.Cog):
     def __init__(self, bot, confirm):
         self.bot = bot
         self.confirm = confirm
+    
+    def __getdir(ctx):
+        return 'servers/' + str(ctx.guild.id) + '/roles.txt'
 
     @classmethod
     def __roleFileCheck(cls, ctx):
-        dir = str(ctx.guild.id) + '/roles.txt'
+        dir = cls.__getdir(ctx)
         with open(dir, "r") as f:
             ids = f.readlines()
         with open(dir, "w") as f:
@@ -25,7 +28,7 @@ class Roles(commands.Cog):
     async def __createRoles(self, ctx):
         Roles.__roleFileCheck(ctx)
         server = ctx.guild
-        role_file_dir = str(server.id) + '/roles.txt'
+        role_file_dir = self.__getdir(ctx)
 
         team_list = ["Red", "Blue", "Green", "Yellow", "Black", "White"]
         new_teams = []
@@ -91,7 +94,7 @@ class Roles(commands.Cog):
     ))
     async def __assignRole(self, ctx, entered_team):
         Roles.__roleFileCheck(ctx)
-        role_file_dir = str(ctx.guild.id) + '/roles.txt'
+        role_file_dir = self.__getdir(ctx)
         role = discord.utils.get(ctx.guild.roles, name=entered_team)
         roleids = []
         with open(role_file_dir, "r") as file:

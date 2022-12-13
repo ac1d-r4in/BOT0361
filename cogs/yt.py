@@ -3,7 +3,9 @@ from discord.ext import commands
 from async_timeout import timeout
 from random import shuffle
 from functools import partial
-from commands.functions import Embeds, Colors
+from stuff.assets import Embeds, Colors
+from stuff.wipetools import WipeTools
+from stuff.parsers import Parsers
 import youtube_dl
 from yt_dlp import YoutubeDL
 
@@ -199,12 +201,12 @@ class Music(commands.Cog):
 
     __slots__ = ('bot', 'players')
 
-    def __init__(self, bot, confirm, check, parse_tracks):
+    def __init__(self, bot, confirm):
         self.bot = bot
         self.players = {}
         self.confirm = confirm
-        self.check = check
-        self.parse_tracks = parse_tracks
+        self.check = WipeTools.overflowCheck
+        self.parse_tracks = Parsers.crossroad
 
     async def cleanup(self, guild):
         try:

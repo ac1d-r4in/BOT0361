@@ -7,24 +7,26 @@ class Bans(commands.Cog):
         self.bot = bot
         self.confirm = confirm
 
+    def __getdir(ctx):
+        return 'servers/' + str(ctx.guild.id) + '/graylist.txt'
+
     @classmethod
     async def __graylist(cls, ctx, intruder, reason: str = None):
-        server = ctx.guild
-        graylist_file_dir = str(server.id) + '/graylist.txt'
+        graylist_file_dir = cls.__getdir(ctx)
         warnings = await Bans.__userWarnings(ctx, intruder.name)
 
         with open(graylist_file_dir, "a") as f:
             f.write(intruder.name + "\n")
         
         if warnings == 0:
-            await ctx.channel.send(intruder.mention + ", это ваше первое предупреждение!")
-            await Bans.__timeout(ctx, intruder, minutes=5, reason = reason)
+            if await Bans.__timeout(ctx, intruder, minutes=5, reason = reason) == 0:
+                await ctx.channel.send(intruder.mention + ", это ваше первое предупреждение!")
         elif warnings == 1:
-            await ctx.channel.send(intruder.mention + ", это ваше второе и последнее предупреждение! Дальше - Б А Н.")
-            await Bans.__timeout(ctx, intruder, days=1, reason = reason)
+            if await Bans.__timeout(ctx, intruder, days=1, reason = reason) == 0:
+                await ctx.channel.send(intruder.mention + ", это ваше второе и последнее предупреждение! Дальше - Б А Н.")
         else:
-            await ctx.channel.send(intruder.mention + ", вы исчерпали лимит предупреждений и будете забанены.")
-            await Bans.__ban(ctx, intruder, reason)
+            if await Bans.__ban(ctx, intruder, reason) == 0:
+                await ctx.channel.send(intruder.mention + ", вы исчерпали лимит предупреждений и будете забанены.")
 
     @classmethod
     async def __timeout(cls, ctx, intruder, seconds: int = 0, minutes: int = 0, hours: int = 0, days: int = 0, reason: str = None):
@@ -32,9 +34,11 @@ class Bans(commands.Cog):
             duration = datetime.timedelta(seconds=seconds, minutes=minutes, hours= hours, days=days)
             if reason == None: reason = "Причина не указана"
             await intruder.timeout(duration, reason = reason)
-            await ctx.channel.send(intruder.mention + " предупрежден и приглушен на период " + str(duration))
+            await ctx.channel.send(f"{intruder.mention} предупрежден и приглушен на период {str(duration)}")
+            return 0
         except discord.Forbidden:
-            await ctx.channel.send("Я не имею права заглушать пользователей.")
+            await ctx.channel.send("Я не имею права заглушить этого пользователя.")
+            return 1
 
     @classmethod
     async def __ban(cls, ctx, user, reason = None):
@@ -42,14 +46,14 @@ class Bans(commands.Cog):
             await ctx.guild.ban(user, reason = reason)
             await Bans.__ungraylist(ctx, user.name)
             await ctx.channel.send("Пользователь " + user.name + " отправлен в бан.")
+            return 0
         except discord.Forbidden:
             await ctx.channel.send("Пользователю " + user.name + " сегодня везет - у меня нет прав забанить его.")
+            return 1
 
     @classmethod
     async def __userWarnings(cls, ctx, username):
-        server = ctx.guild
-
-        graylist_file_dir = str(server.id) + '/graylist.txt'
+        graylist_file_dir = cls.__getdir(ctx)
         with open(graylist_file_dir, "r") as f:
             c = 0
             for line in f:
@@ -59,8 +63,7 @@ class Bans(commands.Cog):
 
     @classmethod
     async def __ungraylist(cls, ctx, username):
-        server = ctx.guild
-        file_dir = str(server.id) + '/graylist.txt'
+        file_dir = cls.__getdir(ctx)
 
         with open(file_dir, "r") as f:
             lines = f.readlines()
@@ -79,7 +82,7 @@ class Bans(commands.Cog):
     @classmethod
     async def __amnesty(cls, ctx, full):
         server = ctx.guild
-        file_dir = str(server.id) + '/graylist.txt'
+        file_dir = cls.__getdir(ctx)
         f = open(file_dir, 'w')
         f.close()
         await ctx.channel.send("Список предупреждений полностью очищен!")
@@ -101,7 +104,7 @@ class Bans(commands.Cog):
             reason = args[1]
         except IndexError:
             reason = None
-        if await self.confirm(ctx, f"выписать предупреждение пользователю {user.mention}?") == True:
+        if await self.confirm(ctx, f"выписать предупреждение пользователю {user.mention}") == True:
             await Bans.__graylist(ctx, user, reason = reason)
 
     @commands.command(name='ungraylist', help='Снимает с упомянутого пользователя все предупреждения. Например, `bot ungraylist @user`')

@@ -4,11 +4,13 @@ class BanWords(commands.Cog):
     def __init__(self, bot, confirm):
         self.bot = bot
         self.confirm = confirm
+        
+    def __getdir(ctx):
+        return 'servers/' + str(ctx.guild.id) + '/banwords.txt'
 
     @classmethod
     async def __addBanWord(cls, ctx, banword):
-        server = ctx.guild
-        banwords_file_dir = str(server.id) + '/banwords.txt'
+        banwords_file_dir = cls.__getdir(ctx)
         banword = banword.lower()
 
         with open(banwords_file_dir, "a") as f:
@@ -17,8 +19,7 @@ class BanWords(commands.Cog):
 
     @classmethod
     async def __removeBanWord(cls, ctx, banword):
-        server = ctx.guild
-        file_dir = str(server.id) + '/banwords.txt'
+        file_dir = cls.__getdir(ctx)
 
         with open(file_dir, "r") as f:
             lines = f.readlines()
@@ -36,8 +37,7 @@ class BanWords(commands.Cog):
 
     @classmethod
     async def __showBanWords(cls, ctx):
-        server = ctx.guild
-        banwords_file_dir = str(server.id) + '/banwords.txt'
+        banwords_file_dir = cls.__getdir(ctx)
 
         with open(banwords_file_dir, "r") as f:
             bws = ""
@@ -47,8 +47,7 @@ class BanWords(commands.Cog):
     
     @classmethod
     def __freedomOfSpeech(cls, ctx):
-        server = ctx.guild
-        file_dir = str(server.id) + '/banwords.txt'
+        file_dir = cls.__getdir(ctx)
         f = open(file_dir, 'w')
         f.close()
     

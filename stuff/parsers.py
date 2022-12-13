@@ -7,6 +7,7 @@ class Parsers:
 
     @classmethod
     def crossroad(cls, url):
+        print('here')
         if "music.yandex.ru" in url:
             return cls.YMusicParser(url)
         elif "vk.com" in url:
